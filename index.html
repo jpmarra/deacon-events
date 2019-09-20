@@ -1,9 +1,68 @@
 <html lang="en" style="width:100%; height:100%;">
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.228/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.228/pdf_viewer.js"></script>
   <title>Experiences x The Deacon</title>
 </head>
-  <body style="width:100%; height:100%; margin:0;">
-    <iframe src="https://raw.githubusercontent.com/jpmarra/deacon-events/2d26d0809709a333af47c1044b2b63406eae0b61/Experiences_The%20DeaconWEB.pdf" style="width:100%; height:100%;" frameborder="0"></iframe>
+  <body style="margin:0">
+    <div id="deacon-experiences"></div>
+    <script>
+        var DEFAULT_SCALE = 1.0;
+    
+        var loadingTask = pdfjsLib.getDocument('./experiences.pdf');
+        var container = document.getElementById('deacon-experiences');
+
+        function setPageScale(pdfPage) {
+            var unscaledViewport = pdfPage.getViewport(1);
+            return pdfPage.getViewport(window.innerWidth / unscaledViewport.width);
+        }
+
+        loadingTask.promise.then(function (doc) {
+            var promise = Promise.resolve();
+
+            for (var i = 1; i <= doc.numPages; i++) {
+                promise = promise.then(function (pageNum) {
+                    return doc.getPage(pageNum).then(function (pdfPage) {
+                        // Create the page view.
+                        console.log(pdfjsLib)
+                        var pdfPageView = new pdfjsViewer.PDFPageView({
+                        container: container,
+                            id: pageNum,
+                            scale: DEFAULT_SCALE,
+                            defaultViewport: setPageScale(pdfPage),
+                            defaultZoomValue: 'page-width',
+                            annotationLayerFactory:
+                            new pdfjsViewer.DefaultAnnotationLayerFactory(),
+                            renderInteractiveForms: true,
+                        });
+
+                        // Associate the actual page with the view and draw it.
+                        pdfPageView.setPdfPage(pdfPage);
+                        return pdfPageView.draw();
+                    });
+                }.bind(null, i));
+            }
+        });
+
+    </script>
   </body>
 </html>
+
+
+        <!-- loadingTask.promise.then(function (doc) {
+            doc.getPage(1).then(function(page) {
+                var expCanvas = document.getElementById('exp_canvas');
+                var context = expCanvas.getContext('2d');
+
+                var viewport = page.getViewport(1);
+                viewport = page.getViewport(window.innerWidth / viewport.width)
+                expCanvas.width = viewport.width;
+                expCanvas.height = viewport.height;
+
+                page.render({
+                    canvasContext: context,
+                    viewport: viewport
+                })
+            });
+        }); -->
